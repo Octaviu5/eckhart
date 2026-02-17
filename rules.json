@@ -1,0 +1,41 @@
+{
+  "1000": {
+    "intentions": {
+      "WORK": {
+        "binaries": [
+          "inkscape",
+          "gimp-3.0",
+          "kdenlive",
+        ],
+        "days": {
+          "def": {
+            "time-windows": ["08:00-21:00"]
+          }
+        }
+      },
+      "BROWSING": {
+        "binaries": ["firefox-esr","librewolf", "msedge"],
+        "days": {
+          "fri": { "time-windows": ["12:00-21:00"], "time-budget": 7200 }
+        },
+        "single":"true"
+      }
+    },
+    "days_off": {
+      "mon": ["librewolf", "chromium"],
+      "tue": ["librewolf", "chromium"],
+      "wed": ["librewolf", "chromium"],
+      "thu": ["librewolf", "chromium"],
+      "fri": ["chromium"],
+      "sat": [],
+      "sun": ["librewolf"]
+    },
+    "authorized_zones": ["/usr", "/opt", "/bin", "/sbin", "/lib", "/lib64"],
+
+    "dev_zones": ["/path/to/homefolder"],
+
+    "hooks": {
+      "wine": "/opt/eckhart/hooks/wine_user1000.py",
+    }
+  }
+}
