@@ -42,7 +42,7 @@ Apart from Focus Zones, Eckhart gives you total authority over your screen time 
 
 Eckhart is split into four distinct parts located in `/opt/eckhart/`:
 
-1. **The Root Daemon (`eckhart-root.py`):** The core engine. It loads **eBPF bytecode** into the kernel to watch every `execve` system call.
+1. **The Root Daemon (`eckhart-daemon.py`):** The core engine. It loads **eBPF bytecode** into the kernel to watch every `execve` system call.
 2. **Rules Configuration (`rules.json`):** Your personalized map of intentions, zones, and time constraints.
 3. **The State Engine (`state.json`):** Eckhart’s long-term memory. It tracks your used time so limits don't reset upon reboot.
 4. **User Notifications (`eckhart-user.py`):** The HUD. It runs in your user session and sends real-time desktop notifications via Unix Sockets.
@@ -65,14 +65,14 @@ Eckhart is designed to live in `/opt/eckhart/`.
 
 ```bash
 sudo mkdir /opt/eckhart/
-sudo cp eckhart-root.py eckhart-user.py rules.json /opt/eckhart/
+sudo cp eckhart-daemon.py eckhart-user.py rules.json /opt/eckhart/
 
 ```
 
 ### **3. Launch the Root Daemon**
 
 ```bash
-sudo python3 /opt/eckhart/eckhart-root.py --verbose
+sudo python3 /opt/eckhart/eckhart-daemon.py --verbose
 
 ```
 
@@ -208,6 +208,15 @@ My personal recommendation is to test eckhart over a period of time. Define a fe
 Once you find youre comfortable with your self established limits, you can eckhart into a service and you could also change your account type into a non admin account (so you cant edit the rules). Then you can trust your admin password to a friend or family member, to avoid tampering with the rules and focusing on getting things done.
 
 I personally use a service to send the admin password to the future so i dont have a way to break my rules for a long time.
+
+## **A PERSONAL NOTE**
+
+**I have created this script as a way to help myself keep focused on my other personal goals and projects. And as such, i dont have much time to devote to it. 
+I have published it in hopes that it can help someone focus on their on goals and projects. 
+It should work as it is, but I cant promise swift maintenance or steady updates.
+Feel free to fork it and modify it to your personal liking. 
+Attribution is appreciated if you publish your fork.
+ .**
 
 
 ## **Credits**
