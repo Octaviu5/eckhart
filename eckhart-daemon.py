@@ -99,12 +99,14 @@ SOCKET_BASE_DIR = "/tmp/eckhart"
 ACTIVE_SOCKETS = {}
 
 # --- ENFORCEMENT CONFIG ---
-COMMITMENT_WINDOW = 15.0  # Seconds to lock an intention
+COMMITMENT_WINDOW = 11.0  # Seconds to lock an intention
 WALL_TICK_RATE = 1.0     # Frequency of status pulses
 SAVE_INTERVAL = 30.0     # Persistence save frequency
 SUSSY_CHECK_RATE = 2.0   # How often to audit dev zones
-GRACE_PERIOD = 10.0
-CHILL_DURATION = 180.0
+GRACE_PERIOD = 11.0
+CHILL_DURATION = 181.0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Eckhart Daemon Enforcer")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable console logging")
@@ -147,7 +149,6 @@ def main():
             "grace_until": 0,
             "conn": None
         }
-
         s_path = os.path.join(SOCKET_BASE_DIR, f"{u_id}.sock")
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s.setblocking(False)
@@ -188,7 +189,7 @@ def main():
         if pending["name"]:
             # Hardcoded 15s window from your main loop logic
             elapsed = now - pending["since"]
-            pending_remaining = max(0, int(15 - elapsed))
+            pending_remaining = max(0, int(COMMITMENT_WINDOW - elapsed))
 
         for name, config in profile["intentions"].items():
             used_budget = state["intentions"].get(name, 0)
@@ -241,6 +242,25 @@ def main():
     def save_persistence(force=False):
         global last_saved_snapshot, last_save_tick
         today = datetime.now().strftime("%Y-%m-%d")
+        
+        # Read the file date to check for rollover without needing a global tracker
+        file_date = None
+        if os.path.exists(STATE_PATH):
+            try:
+                with open(STATE_PATH, "r") as f:
+                    file_date = json.load(f).get("date")
+            except: pass
+
+        if file_date and file_date != today:
+            print(f"\n[!] DATE CHANGE DETECTED: {file_date} -> {today}. RESETTING ALL BUDGETS.\n")
+            log(0, "SYSTEM", "RESET", "", f"New day: {today}. Zeroing budgets.")
+            # Wipe memory for all users
+            for u_id in USER_STATES:
+                for intent_name in USER_STATES[u_id]["intentions"]:
+                    USER_STATES[u_id]["intentions"][intent_name] = 0
+            # Invalidate snapshot to ensure the '0' state is written to disk
+            last_saved_snapshot = {}
+
         current_budgets = json.loads(json.dumps({str(u): state["intentions"] for u, state in USER_STATES.items()}))
         
         if not force and current_budgets == last_saved_snapshot: 
@@ -254,6 +274,8 @@ def main():
             log(0, "SYSTEM", "DISK", "", "OK")
         except Exception as e: 
             log(0, "SYSTEM", "DISK_ERR", "", str(e))
+
+    save_persistence()
 
     def get_real_path(pid, raw_path):
         if raw_path.startswith("/"): return os.path.realpath(raw_path)
